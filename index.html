@@ -578,12 +578,13 @@ if(!R){glFail('Tarayıcın 3D grafiği (WebGL) çalıştıramadı. Tarayıcıda 
 let W=0,H=0,DPR=1,MS=96,MSH=62,CAMD=1000,composer=null;
 // adaptive quality: 3 full · 2 lower resolution · 1 native 1x · 0 no bloom. Only ever steps down; remembered per device.
 let QL=3;try{const q=parseInt(localStorage.getItem('yorunge7_q2'));if(q>=0&&q<=3)QL=q;}catch(e){}
+let PM='mid';try{const p=localStorage.getItem('yorunge7_pm');if(p==='hi'||p==='mid'||p==='low')PM=p;}catch(e){} // performans modu: hi = tam, mid = 45 FPS + hafif çözünürlük, low = 30 FPS + efektsiz (ısınmayı azaltır)
 const scene=new THREE.Scene();
 scene.background=new THREE.Color('#04060c');
 scene.fog=new THREE.Fog('#04060c',1500,3600);
 const cam=new THREE.PerspectiveCamera(50,1,10,9000);
 function resize(){
-  const dev=window.devicePixelRatio||1,cap=innerWidth<700?1.5:2;DPR=QL>=3?Math.min(cap,dev):QL===2?Math.max(1,Math.min(cap,dev)*.8):1;{const de=document.documentElement;W=Math.max(innerWidth,de.clientWidth||0);H=Math.max(innerHeight,de.clientHeight||0);}document.body.classList.toggle('short',H<520);try{document.body.classList.toggle('compact',!!S.compact||H<520);}catch(e){}
+  const dev=window.devicePixelRatio||1,cap=innerWidth<700?1.5:2;DPR=QL>=3?Math.min(cap,dev):QL===2?Math.max(1,Math.min(cap,dev)*.8):1;DPR=PM==='low'?Math.min(DPR,1):PM==='mid'?Math.min(DPR,1.25):DPR;{const de=document.documentElement;W=Math.max(innerWidth,de.clientWidth||0);H=Math.max(innerHeight,de.clientHeight||0);}document.body.classList.toggle('short',H<520);try{document.body.classList.toggle('compact',!!S.compact||H<520);}catch(e){}
   R.setPixelRatio(DPR);R.setSize(W,H,false);cv.style.width=W+'px';cv.style.height=H+'px';
   if(composer){composer.setPixelRatio(DPR);composer.setSize(W,H);}
   ov.width=W*DPR;ov.height=H*DPR;ov.style.width=W+'px';ov.style.height=H+'px';
@@ -1187,7 +1188,7 @@ const grid=new THREE.GridHelper(WX,50,'#2a3b5c','#1a2740');grid.position.set(WX/
 
 let sectorGroup=new THREE.Group();scene.add(sectorGroup);
 try{if(THREE.EffectComposer&&THREE.UnrealBloomPass&&THREE.RenderPass){let rt=null;try{if(R.capabilities.isWebGL2&&THREE.WebGLMultisampleRenderTarget){rt=new THREE.WebGLMultisampleRenderTarget(Math.max(1,W*DPR),Math.max(1,H*DPR),{format:THREE.RGBAFormat});rt.samples=4;}}catch(e){rt=null;}composer=rt?new THREE.EffectComposer(R,rt):new THREE.EffectComposer(R);composer.setPixelRatio(DPR);composer.setSize(W,H);composer.addPass(new THREE.RenderPass(scene,cam));composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(W,H),.4,.35,.9));}}catch(e){composer=null;}
-function render(){RFRAME++;if(composer&&QL>0){try{composer.render();return;}catch(e){composer=null;}}R.render(scene,cam);}
+function render(){RFRAME++;if(composer&&QL>0&&PM!=='low'){try{composer.render();return;}catch(e){composer=null;}}R.render(scene,cam);}
 const perf={acc:0,n:0,t:0,slow:0,grace:4};
 function perfTick(dt,active){
   if(!active||document.hidden||QL<=0){perf.acc=perf.n=perf.t=0;return;}
@@ -2911,6 +2912,10 @@ function settingsInto(pane,re){
   const QN=['Düşük (efektsiz)','Orta','Yüksek','En yüksek'];
   const rq=document.createElement('div');rq.className='row';rq.innerHTML=`<span class="note">Grafik: ${QN[QL]}. Telefon zorlanırsa oyun kendiliğinden düşürür.</span>`;
   if(QL<3)rq.appendChild(mkBtn('mut','En yükseğe al',()=>{QL=3;perf.grace=4;try{localStorage.setItem('yorunge7_q2',3);}catch(e){}resize();re();}));pane.appendChild(rq);
+  {const rf=document.createElement('div');rf.className='row';rf.innerHTML='<span class="note">Performans: telefon ısınıyorsa Dengeli ya da Pil tasarrufu seç.</span>';
+   const tg=document.createElement('div');tg.className='toggle';
+   [['hi','Yüksek'],['mid','Dengeli'],['low','Pil tasarrufu']].forEach(([k,n])=>tg.appendChild(mkBtn(PM===k?'go':'mut',n,()=>{PM=k;try{localStorage.setItem('yorunge7_pm',k);}catch(x){}perf.grace=4;resize();re();})));
+   rf.appendChild(tg);pane.appendChild(rf);}
   const ra=document.createElement('div');ra.className='row';ra.innerHTML=`<span class="note">Ses: ${AU.on?'açık':'kapalı'} · müzik %${Math.round(AU.mv*100)} · efekt %${Math.round(AU.sv*100)}</span>`;
   ra.appendChild(mkBtn(AU.on?'go':'mut',AU.on?'Sesi kapat':'Sesi aç',()=>{AU.on=!AU.on;auInit();auApply();auSave();sfx('ui');re();}));
   pane.appendChild(ra);
@@ -3087,7 +3092,9 @@ function applyHud(){const m=((S.hud||{})[hOr()])||{};HUDE.forEach(([k,sel])=>{co
 })();
 ready=true;resize();
 let last=performance.now(),idleA=0,hudOff=false;document.body.classList.add('authing');hudOff=true;
+let nextFT=0;
 function frame(now){
+  {const mf=PM==='low'?33.3:PM==='mid'?22.2:0;if(mf){if(now-nextFT>150)nextFT=now;if(now<nextFT-2){requestAnimationFrame(frame);return;}nextFT+=mf;}}
   const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;
   const active=S.fac&&$('mStart').hidden&&$('mOut').hidden&&$('mAuth').hidden&&$('mLobby').hidden;perfTick(Math.min(raw,.5),active&&!loading);if(hudOff===active){hudOff=!active;document.body.classList.toggle('authing',hudOff);}
   if(active){
