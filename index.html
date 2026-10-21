@@ -677,7 +677,7 @@ const AMMO=[
   {id:'a2',name:'A-2',mult:2,col:'#7fe6ff',pack:1000,price:500,cur:'kr',txt:'×2 hasar'},
   {id:'a3',name:'A-3',mult:3,col:'#ffd27a',pack:1000,price:1000,cur:'kr',txt:'×3 hasar'},
   {id:'a4',name:'A-4',mult:4,col:'#ff9bd5',pack:1000,price:2500,cur:'kr',txt:'×4 hasar'},
-  {id:'ks',name:'K-Ç',mult:2,steal:true,col:'#7dffb0',pack:1000,price:1000,cur:'kr',txt:'×2 hasar; düşman kalkanından çaldığını kendi kalkanına ekler'}
+  {id:'ks',name:'K-Ç',mult:2,steal:true,col:'#7dffb0',pack:1000,price:1000,cur:'kr',txt:'Üçgen 3 atış; sadece düşman kalkanına hasar verir (canına değil), vurduğunu kendi kalkanına ekler'}
 ];
 const RK={
   r1:{name:'R-1 roket',dmg:1000,cd:3,pack:100,price:10000,cur:'cr',txt:'1.000 hasar'},
@@ -848,7 +848,7 @@ function stats(){
     else if(it.kind==='shield'){const v=it.sh*(1+.04*(dl-1))*1;shield+=v;absW+=v*it.abs;}}));
   const abs=shield?absW/shield:0;
   dmg*=fm.dmg||1;shield*=fm.sh||1;dmgD*=fm.dmg||1;
-  dmg*=1+(sh.dmgB||0);dmgD*=1+(sh.dmgB||0);shield*=1+(sh.shB||0);
+  dmg*=1+(sh.dmgB||0);dmgD*=1+(sh.dmgB||0);shield*=1+(sh.shB||0);if((S.bSh||0)>Date.now())shield*=1.3;
   if(typeof P!=='undefined'&&T<(P.turboT||0))spd*=1.4;
   const cl=cpuLv('cargo');
   return{maxHp:Math.round(sh.hp*(1+(sh.hpB||0))),maxSh:Math.round(shield),abs,spd,dmg:Math.round(dmg),dmgD:Math.round(dmgD),nL,rate:.6,range:560,cargo:Math.round(sh.cargo*(1+(cl?[25,50,100][cl-1]/100:0))),rkMul:fm.rk||1,repT:REP[S.rep].t};
@@ -1570,9 +1570,9 @@ function gainXp(x){S.xp+=x;S.totalXp+=x;
     questEvent('check');}}
 function today(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 /* =================== COMBAT =================== */
-function hurtEnemy(e,d,steal){
+function hurtEnemy(e,d,steal,shOnly){
   if(e.dead)return;e.hitT=T;e.aggro=true;
-  const a=Math.min(e.sh,d);e.sh-=a;e.hp-=d-a;
+  const a=Math.min(e.sh,d);e.sh-=a;if(!shOnly)e.hp-=d-a;else if(a<=0&&T-(e.noShT||0)>1.2){e.noShT=T;flo(e.x,e.y,'KALKAN YOK','#7dffb0',12,e.hitR+40);}
   if(steal&&a>0){const st=stats();P.sh=Math.min(st.maxSh,P.sh+a);}
   flo(e.x+rnd(-10,10),e.y,fmt(d),'#ffffff',12,e.hitR+30);
   if(e.hp<=0)killEnemy(e);
@@ -1894,7 +1894,10 @@ function update(dt){
         if(S.ammo[sel]>0){P.invT=0;
           const am=AMMO.find(a=>a.id===sel),use=Math.min(st.nL,S.ammo[sel]);S.ammo[sel]-=use;
           const off=19*(SHIPS[S.ship].sc||2.35),dmg=Math.round(st.dmg*am.mult*(use/st.nL)*rnd(.9,1.1)),fx=Math.cos(P.ang)*6,fy=Math.sin(P.ang)*6;
-          [-1,1].forEach((sd,i)=>addShot({from:'p',kind:'laser',x:P.x+fx+Math.cos(P.ang+1.57)*off*sd,y:P.y+fy+Math.sin(P.ang+1.57)*off*sd,tgt:t,spd:1500,dmg:i?0:dmg,vis:!!i,steal:!!am.steal}));
+          let dm=dmg;if((S.bAm||0)>0){dm=Math.round(dm*1.3);S.bAm--;if(S.bAm===0)log('Çekirdek mermi takviyesi bitti.','#ffbe55');}
+          if(am.steal){const c=Math.cos(P.ang),sn=Math.sin(P.ang),pts=[[off*1.1,0],[-off*.4,off*.9],[-off*.4,-off*.9]];
+            pts.forEach(([a,b])=>addShot({from:'p',kind:'laser',x:P.x+c*a-sn*b,y:P.y+sn*a+c*b,tgt:t,spd:1500,dmg:Math.round(dm/3),steal:true,shOnly:true}));}
+          else [-1,1].forEach((sd,i)=>addShot({from:'p',kind:'laser',x:P.x+fx+Math.cos(P.ang+1.57)*off*sd,y:P.y+fy+Math.sin(P.ang+1.57)*off*sd,tgt:t,spd:1500,dmg:i?0:dm,vis:!!i,steal:!!am.steal}));
         }else if(cpuLv('ammoBuy')&&canPay(AMMO.find(a=>a.id===sel).price,AMMO.find(a=>a.id===sel).cur)){const am2=AMMO.find(a=>a.id===sel);S[am2.cur]-=am2.price;S.ammo[sel]+=am2.pack;log(`CPU: ${am2.name} cephane yenilendi.`,'#8ad8ff');}else if(T-noAmmoWarn>8){log('Cephane bitti. Hangar > Mağaza\'dan al.','#ff5468');noAmmoWarn=T;}
       }
     }
@@ -1976,7 +1979,7 @@ function update(dt){
     if(d<=step+hitR){scene.remove(s.mesh);shots.splice(i,1);
       if(s.from==='p'){
         if(s.kind==='rocket'&&s.slow){t.slowT=s.r.dur;t.slowF=s.r.slow;flo(t.x,t.y,'YAVAŞ','#8ad8ff',13,t.hitR+50);}
-        if(!s.vis)hurtEnemy(t,s.dmg,s.steal);burst(s.x,s.y,s.kind==='rocket'?(s.slow?'#8ad8ff':'#ffb547'):laserCol(),s.kind==='rocket'?30:6,s.kind==='rocket'?240:120,14);if(s.kind==='rocket')shake=Math.max(shake,4);}
+        if(!s.vis)hurtEnemy(t,s.dmg,s.steal,s.shOnly);burst(s.x,s.y,s.kind==='rocket'?(s.slow?'#8ad8ff':'#ffb547'):laserCol(),s.kind==='rocket'?30:6,s.kind==='rocket'?240:120,14);if(s.kind==='rocket')shake=Math.max(shake,4);}
       else if(s.miss||s.vis){burst(s.x,s.y,s.col,4,80,14);}
       else{if(!inSafe(P)){P.lastBy=s.by;hurtPlayer(s.dmg);}burst(s.x,s.y,s.col,8,120,14);}
     }else{s.x+=dx/d*step;s.y+=dy/d*step;}
@@ -2827,7 +2830,21 @@ function paneSell(pane){
   const l=document.createElement('div');l.className='list';pane.appendChild(l);
   Object.entries(ORE).forEach(([k,o])=>{const n=S.cargo[k],ok=oreSellable(k),v=n*orePrice(k);const r=li('extra',o.name,ok?`${fmt(n)} adet · adedi ${fmt(orePrice(k))} kredi`:`${fmt(n)} adet · bu istasyon almıyor (X-4 / X-8'e git)`,'',false,artOre(k));r.style.setProperty('--k',o.col);
     r.appendChild(mkBtn('cr',ok?`${fmt(v)}`:'Alınmıyor',()=>sellOre([k]),!n||!ok));l.appendChild(r);});
+  paneWork(pane);
   if(!used)pane.insertAdjacentHTML('beforeend','<p class="note">Kargo boş. Uzaylıların düşürdüğü madenleri topla, burada sat.</p>');
+}
+const CORE_COST={f:20,k:8,z:1},CORE_SELL=3600,CORE_VOL=100,CORE_MIN=2;
+function paneWork(pane){
+  const n=S.core||0,now=Date.now(),sh=Math.max(0,(S.bSh||0)-now);
+  const can=S.cargo.f>=CORE_COST.f&&S.cargo.k>=CORE_COST.k&&S.cargo.z>=CORE_COST.z;
+  const c=card(`<div class="hd"><b>Atölye · Çekirdek</b><span class="tag">${fmt(n)} ADET</span></div><small>${CORE_COST.f} Ferrit + ${CORE_COST.k} Kobalt + ${CORE_COST.z} Zirkon = 1 Çekirdek. Kargoda yer kaplamaz. Aşağıdaki takviyeler kısa sürelidir.</small><div class="row"></div>`);
+  c.querySelector('.row').appendChild(mkBtn('cr','Üret',()=>{if(!can)return;['f','k','z'].forEach(k=>S.cargo[k]-=CORE_COST[k]);S.core=(S.core||0)+1;log('1 Çekirdek üretildi.','#9bf0ff');after('+1 Çekirdek');},!can));
+  c.querySelector('.row').appendChild(mkBtn('cr',`Sat · ${fmt(CORE_SELL)}`,()=>{if(!n)return;S.core--;S.cr+=CORE_SELL;log(`Çekirdek satıldı · +${fmt(CORE_SELL)} kredi`,'#ffbe55');after(`+${fmt(CORE_SELL)} kredi`);},!n));
+  pane.appendChild(c);
+  const a=card(`<div class="hd"><b>Mermi takviyesi</b><span class="tag">${fmt(S.bAm||0)} ATIŞ</span></div><small>1 Çekirdek = ${CORE_VOL} atış %30 fazla hasar (hangi cephane olursa). En çok 500 atış.</small><div class="row"></div>`);
+  a.querySelector('.row').appendChild(mkBtn('cr','Kullan · 1 Çekirdek',()=>{if(!n||(S.bAm||0)>=500)return;S.core--;S.bAm=(S.bAm||0)+CORE_VOL;log(`Mermi takviyesi: ${S.bAm} atış +%30.`,'#9bf0ff');after();},!n||(S.bAm||0)>=500));pane.appendChild(a);
+  const s=card(`<div class="hd"><b>Kalkan takviyesi</b><span class="tag">${sh?Math.ceil(sh/60000)+' DK KALDI':'KAPALI'}</span></div><small>1 Çekirdek = ${CORE_MIN} dakika %30 fazla kalkan kapasitesi. En çok 10 dakika.</small><div class="row"></div>`);
+  s.querySelector('.row').appendChild(mkBtn('cr','Kullan · 1 Çekirdek',()=>{if(!n||sh>=600000)return;S.core--;S.bSh=Math.max(now,S.bSh||0)+CORE_MIN*60000;if(typeof P!=='undefined'&&P&&!P.dead)P.sh=Math.min(stats().maxSh,P.sh+stats().maxSh*.07);log(`Kalkan takviyesi ${CORE_MIN} dk eklendi.`,'#9bf0ff');after();},!n||sh>=600000));pane.appendChild(s);
 }
 function sellOre(keys){let v=0;keys.forEach(k=>{if(!oreSellable(k))return;v+=S.cargo[k]*orePrice(k);S.cargo[k]=0;});if(!v)return;S.cr+=v;log(`Madenler satıldı · +${fmt(v)} kredi`,'#ffbe55');questEvent('sell',{n:v});after(`+${fmt(v)} kredi`);}
 let adTimer=null;
@@ -3029,7 +3046,7 @@ const NEWS=[['v98','Şirket sektörleri 5–8, 4 yeni canavar, Beta ve Gama geç
 function lbNewsHtml(){
   const l=[];try{const left=aucLeft();l.push(['Açık artırma',`Tur ${left} sonra yenilenir.`]);}catch(e){}
   ensureQuests();const dd=S.qs.daily.list.filter(x=>!x.done).length;if(dd)l.push(['Günlük',`${dd} günlük görev seni bekliyor.`]);
-  const bs=S.bst||{},now=Date.now();if((bs.xp||0)>now)l.push(['Güçlendirici',`Deneyim +%50 · ${Math.ceil((bs.xp-now)/60000)} dk`]);if((bs.cr||0)>now)l.push(['Güçlendirici',`Kredi +%50 · ${Math.ceil((bs.cr-now)/60000)} dk`]);
+  const bs=S.bst||{},now=Date.now();if((S.bAm||0)>0)l.push(['Çekirdek',`Mermi +%30 · ${S.bAm} atış`]);if((S.bSh||0)>now)l.push(['Çekirdek',`Kalkan +%30 · ${Math.ceil((S.bSh-now)/60000)} dk`]);if((bs.xp||0)>now)l.push(['Güçlendirici',`Deneyim +%50 · ${Math.ceil((bs.xp-now)/60000)} dk`]);if((bs.cr||0)>now)l.push(['Güçlendirici',`Kredi +%50 · ${Math.ceil((bs.cr-now)/60000)} dk`]);
   const tt=titleList().filter(x=>!x.perm);if(tt.length)l.push(['Geçici unvan',tt.map(x=>x.t+' ('+Math.ceil(x.left/3600000)+' sa)').join(', ')]);
   NEWS.forEach(n=>l.push(n));
   return '<b>Haberler</b>'+l.slice(0,7).map(([a,b])=>`<div><span style="color:var(--dim)">${a}</span> · ${b}</div>`).join('');}
