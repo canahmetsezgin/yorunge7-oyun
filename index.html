@@ -1659,7 +1659,8 @@ let spawnMode='base';
 const spawnFee=m=>{const s=SHIPS[S.ship];if(!s||!s.price||m==='base')return 0;return Math.max(1,Math.ceil(s.price*(m==='portal'?.02:.04)));};
 function nearestBase(from){ // BFS
   const seen=new Set([from]),q=[from];while(q.length){const m=q.shift();if(MAPS[m].base&&mapAllowed(m)&&(!MAPS[m].fac||MAPS[m].fac===S.fac))return m;MAPS[m].links.forEach(l=>{if(!seen.has(l)&&mapAllowed(l)){seen.add(l);q.push(l);}});}return homeMap();}
-function nextHop(from,to){const prev={},seen=new Set([from]),q=[from];while(q.length){const m=q.shift();if(m===to)break;MAPS[m].links.forEach(l=>{if(!seen.has(l)&&mapAllowed(l)){seen.add(l);prev[l]=m;q.push(l);}});}
+function mapReach(from){const seen=new Set([from]),q=[from];while(q.length){const m=q.shift();MAPS[m].links.forEach(l=>{if(!seen.has(l)&&mapAllowed(l)&&S.lvl>=MAPS[l].lvl){seen.add(l);q.push(l);}});}return seen;}
+function nextHop(from,to){const prev={},seen=new Set([from]),q=[from];while(q.length){const m=q.shift();if(m===to)break;MAPS[m].links.forEach(l=>{if(!seen.has(l)&&mapAllowed(l)&&S.lvl>=MAPS[l].lvl){seen.add(l);prev[l]=m;q.push(l);}});}
   let cur=to;while(prev[cur]&&prev[cur]!==from)cur=prev[cur];return cur;}
 function laserCol(){const a=AMMO.find(x=>x.id===S.amSel);const pnt=PAINTS.find(p=>p.id===S.paint);return a.col||(pnt&&pnt.glow)||FAC[S.fac].col;}
 function addShot(s){
@@ -3256,9 +3257,10 @@ function mapSchema(p){
 function openMaps(sch){tutEv('maps');const p=$('mPane');p.innerHTML='';
   {const r=document.createElement('div');r.className='row';r.appendChild(mkBtn(sch?'mut':'go',sch?'Sektör listesi':'Harita şeması',()=>openMaps(!sch)));p.appendChild(r);}
   if(sch===true){mapSchema(p);$('mMaps').hidden=false;return;}
-  Object.keys(MAPS).filter(id=>!MAPS[id].gate&&mapAllowed(id)).forEach(id=>{const m=MAPS[id],ok=S.lvl>=m.lvl,here=id===S.map;
+  const reach=mapReach(S.map),ownC=S.fac?CO[S.fac]:'',rank=id=>id===S.map?0:id[0]===ownC?1:/^[KMY]/.test(id)?3:2;
+  Object.keys(MAPS).filter(id=>!MAPS[id].gate&&mapAllowed(id)).sort((a,b)=>rank(a)-rank(b)||(rank(a)===1?parseInt(a.slice(2))-parseInt(b.slice(2)):0)).forEach(id=>{const m=MAPS[id],ok=S.lvl>=m.lvl&&(id===S.map||reach.has(id)),here=id===S.map;
     const r=document.createElement('div');r.className='row';r.innerHTML=`<span class="note"><b>${mapLabel(id)}</b>${m.base?' · İstasyon':''} · Sv ${m.lvl}${here?' · BURADASIN':''}</span>`;
-    r.appendChild(mkBtn(here||!ok?'mut':'go',here?'Burada':ok?'Git':'Kilitli',()=>{if(P.dead)return;$('mMaps').hidden=true;P.route=id;P.rGo=true;P.auto=true;P.follow=false;P.moveTo=null;P.target=null;P.boxT=null;log(mapLabel(id)+' sektörüne otopilot rotası çizildi.','#c99bff');},here||!ok));
+    r.appendChild(mkBtn(here||!ok?'mut':'go',here?'Burada':ok?'Git':S.lvl>=m.lvl?'Rota yok':'Kilitli',()=>{if(P.dead)return;$('mMaps').hidden=true;P.route=id;P.rGo=true;P.auto=true;P.follow=false;P.moveTo=null;P.target=null;P.boxT=null;log(mapLabel(id)+' sektörüne otopilot rotası çizildi.','#c99bff');},here||!ok));
     p.appendChild(r);});
   if(S.gg&&!S.gg.g)S.gg.g='a';
   Object.keys(GATES).forEach(gid=>{const GT=GATES[gid],r=document.createElement('div');r.className='row';const mine=!!S.gg&&S.gg.g===gid,busy=!!S.gg&&!mine,gok=S.lvl>=GT.lvl&&!busy&&(mine||S.cr>=GT.fee)&&!(curMap&&curMap.gate),rw=GT.rew;
