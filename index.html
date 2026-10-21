@@ -638,16 +638,16 @@ const ET={ // DarkOrbit karşılıkları: Streuner, Lordakia, Saimon, Mordon, Si
   mizrak:{name:'Mızrak',hp:6000,sh:6000,dmg:200,spd:340,r:22,xp:1600,cr:1600,kr:[1,4],ore:{f:15,k:6},aggro:true,col:'#7cf5c4',rate:1.1},
   kabuk:{name:'Kabuk',hp:20000,sh:10000,dmg:390,spd:120,r:34,xp:3200,cr:6400,kr:[1,8],ore:{f:30,k:12,z:1},aggro:false,col:'#ffa94d',rate:1.6},
   diken:{name:'Diken Yıldızı',hp:40000,sh:40000,dmg:900,spd:220,r:29,xp:6400,cr:12800,kr:[1,12],ore:{k:25,z:4},aggro:true,col:'#9bf6ff',rate:1.4},
-  korsan:{name:'Korsan',hp:180000,sh:100000,dmg:2000,spd:300,r:26,xp:25600,cr:100000,kr:[1,25],ore:{z:10},aggro:true,col:'#ff5a4e',rate:1.2},
+  korsan:{name:'Korsan',hp:180000,sh:100000,dmg:2000,spd:300,r:26,xp:25600,cr:100000,kr:[1,25],ore:{k:30,z:25},aggro:true,col:'#ff5a4e',rate:1.2},
   rakip:{name:'Rakip pilot',hp:50000,sh:50000,dmg:700,spd:300,r:24,xp:12000,cr:30000,kr:[1,6],ore:{k:15,z:3},aggro:true,col:'#ff9f4a',rate:1.1,pvp:1},
   zehir:{name:'Zehir Kıvrığı',like:'kivrik',hp:30000,sh:30000,dmg:600,spd:320,r:23,xp:7200,cr:11000,kr:[1,14],ore:{k:28,z:4},aggro:true,col:'#8cff6b',rate:1.3},
   siper:{name:'Siper Kabuk',like:'kabuk',hp:50000,sh:40000,dmg:800,spd:130,r:37,xp:9600,cr:19000,kr:[1,18],ore:{k:30,z:6},aggro:false,col:'#ffd27a',rate:1.6},
   nokta:{name:'Nokta Mızrak',like:'mizrak',hp:70000,sh:70000,dmg:1100,spd:360,r:25,xp:12800,cr:25000,kr:[1,22],ore:{k:34,z:8},aggro:true,col:'#ff7ae0',rate:1.1},
   yildiz:{name:'Kızıl Yıldız',like:'diken',hp:110000,sh:100000,dmg:1700,spd:240,r:32,xp:17600,cr:36000,kr:[1,30],ore:{k:40,z:12},aggro:true,col:'#ff6b6b',rate:1.4},
-  kovan:{name:'Kovan Ana',hp:400000,sh:300000,dmg:4450,spd:90,r:56,xp:51200,cr:409600,kr:[1,128],ore:{k:60,z:20},aggro:true,col:'#c792ff',rate:1.1,resp:120}
+  kovan:{name:'Kovan Ana',hp:400000,sh:300000,dmg:4450,spd:90,r:56,xp:51200,cr:409600,kr:[1,128],ore:{k:120,z:60},aggro:true,col:'#c792ff',rate:1.1,resp:120}
 };
 const TIER={n:{pre:'',m:1,dm:1,sc:1},b:{pre:'Boss ',m:4,dm:3,sc:1.3},u:{pre:'Uber ',m:8,dm:5,sc:1.5}};
-const ORE={f:{name:'Ferrit',price:10,col:'#d8a878'},k:{name:'Kobalt',price:25,col:'#5ca8ff'},z:{name:'Zirkon',price:200,col:'#ff6bd6'}};
+const ORE={f:{name:'Ferrit',price:50,col:'#d8a878'},k:{name:'Kobalt',price:125,col:'#5ca8ff'},z:{name:'Zirkon',price:1000,col:'#ff6bd6'}}; // v132: madenler ×5 (kill kredisinin ~%50-100'ü; derin sektörler daha çok Zirkon bırakır)
 const SHIPS={ // 12 gemi; ağır gemiler: yavaş, çok can/kargo/silah; hafif gemiler: hızlı, az can/kargo (DarkOrbit gibi). DarkOrbit isimleri: Phoenix, Liberator, Piranha, Nostromo, Pusat | Vengeance, Defcom, V-Lightning, Goliath, Spectrum, Cyborg, Citadel. dmgB/shB: pasif bonus
   serce:{name:'Serçe',price:0,cur:'cr',hp:4000,spd:320,L:1,G:1,cargo:100,sc:1.8,txt:'Başlangıç gemisi; tamiri ücretsiz.'},
   kirlangic:{name:'Kırlangıç',price:40000,cur:'cr',hp:16000,spd:330,L:4,G:6,cargo:400,sc:1.95,txt:'İlk gerçek savaş gemisi.'},
@@ -897,7 +897,7 @@ const BOARD=[
   {id:'b201',lvl:2,title:'Lav avı',obj:[QK('bocek',15)]},
   {id:'b202',lvl:2,title:'Kıvrık sürüsü',obj:[QK('kivrik',6,{m:'X-2'})]},
   {id:'b203',lvl:2,title:'Ferrit kıtlığı',obj:[{k:'ore',o:'f',n:120}]},
-  {id:'b204',lvl:2,title:'Ticaret hattı',obj:[{k:'sell',n:2500}]},
+  {id:'b204',lvl:2,title:'Ticaret hattı',obj:[{k:'sell',n:7500}]},
   {id:'b301',lvl:3,title:'Tohum ana',obj:[QK('bocek',2,{tier:'b'})]},
   {id:'b302',lvl:3,title:'Pembe tehlike',obj:[QK('kivrik',12)],noDie:1},
   {id:'b303',lvl:3,title:'Kutu avcısı',obj:[{k:'box',n:8}]},
@@ -908,7 +908,7 @@ const BOARD=[
   {id:'b404',lvl:4,title:'Boss Kıvrık',obj:[QK('kivrik',1,{tier:'b',m:'X-3'})]},
   {id:'b501',lvl:5,title:'Kabuk kırıcı',obj:[QK('kabuk',4)]},
   {id:'b502',lvl:5,title:'İleri karakol',obj:[{k:'go',m:'X-4'},QK('mizrak',6,{m:'X-4'})],ord:1},
-  {id:'b503',lvl:5,title:'Yük gemisi',obj:[{k:'sell',n:20000}]},
+  {id:'b503',lvl:5,title:'Yük gemisi',obj:[{k:'sell',n:60000}]},
   {id:'b504',lvl:5,title:'Zamana karşı',obj:[QK('mizrak',8)],time:600},
   {id:'b601',lvl:6,title:'Diken tarlası',obj:[QK('diken',3,{m:'X-4'})]},
   {id:'b602',lvl:6,title:'Boss Mızrak',obj:[QK('mizrak',1,{tier:'b'})],noDie:1},
@@ -921,7 +921,7 @@ const BOARD=[
   {id:'b801',lvl:8,title:'Ölümsüz pilot',obj:[QK('diken',8)],noDie:1},
   {id:'b802',lvl:8,title:'Zirkon madencisi',obj:[{k:'ore',o:'z',n:30}]},
   {id:'b803',lvl:8,title:'Hızlı diken',obj:[QK('diken',5)],time:600},
-  {id:'b804',lvl:8,title:'Büyük satış',obj:[{k:'sell',n:100000}]},
+  {id:'b804',lvl:8,title:'Büyük satış',obj:[{k:'sell',n:300000}]},
   {id:'b901',lvl:9,title:'Kızıl sektör',obj:[{k:'go',m:'X-4'},QK('diken',6,{m:'X-4'})],ord:1},
   {id:'b902',lvl:9,title:'Boss Diken',obj:[QK('diken',1,{tier:'b'})]},
   {id:'b903',lvl:9,title:'Mızrak yağmuru',obj:[QK('mizrak',12,{m:'X-4'})]},
@@ -934,7 +934,7 @@ const BOARD=[
   {id:'b1103',lvl:11,title:'Kovan\'a doğru',obj:[{k:'go',m:'4-3'},QK('diken',10,{m:'4-3'})],ord:1},
   {id:'b1201',lvl:12,title:'Kovan Ana',obj:[QK('kovan',1)]},
   {id:'b1202',lvl:12,title:'Uber avcısı',obj:[QK('kivrik',3,{tier:'u'}),QK('mizrak',3,{tier:'u'})],noDie:1},
-  {id:'b1203',lvl:12,title:'Zirkon baronu',obj:[{k:'sell',n:400000}]},
+  {id:'b1203',lvl:12,title:'Zirkon baronu',obj:[{k:'sell',n:1200000}]},
   {id:'b1301',lvl:13,title:'Korsan sektörü',obj:[{k:'go',m:'5-1'},QK('korsan',5)],ord:1},
   {id:'b1302',lvl:13,title:'Korsan avı',obj:[QK('korsan',15,{m:'5-1'})]},
   {id:'b1303',lvl:13,title:'Korsan kaptanı',obj:[QK('korsan',2,{tier:'b'})]},
@@ -961,7 +961,7 @@ const BOARD=[
       ()=>{const a=pk(hi);return {title:'Temiz sicil',obj:[QK(a,cnt(a,.6))],noDie:1};},
       ()=>{const a=pk(hi);return {title:`Boss ${ET[a].name}`,obj:[QK(a,1,{tier:'b'})]};},
       ()=>({title:'Maden talebi',obj:[{k:'ore',o:oreK,n:Math.round((40+22*L)*(oreK==='z'?.12:oreK==='k'?.5:1))}]}),
-      ()=>({title:'Ticaret hattı',obj:[{k:'sell',n:Math.round(1500*Math.pow(L,1.6))}]}),
+      ()=>({title:'Ticaret hattı',obj:[{k:'sell',n:Math.round(4500*Math.pow(L,1.6))}]}),
       ()=>({title:'Kutu toplayıcı',obj:[{k:'box',n:6+L}]}),
       ()=>{const x=pk(open.length?open:secs),a=pk(x.ro);return {title:`${mapLabel(x.m)} seferi`,obj:[{k:'go',m:x.m},QK(a,cnt(a,.7),{m:x.m})],ord:1};},
       ()=>{const a=pk(hi);return {title:'Zamana karşı',obj:[QK(a,cnt(a,.6))],time:600+30*L};},
@@ -977,7 +977,7 @@ const BOARD=[
     const pool=[
       {k:'go',m:x1.m},QK(pk(x1.ro),cnt(pk(x1.ro),.6),{m:x1.m}),{k:'ore',o:oreK,n:Math.round((30+14*L)*(oreK==='z'?.12:oreK==='k'?.5:1))},
       QK(a1,cnt(a1,.5)),{k:'box',n:4+Math.ceil(L/2)},{k:'go',m:x2.m},QK(pk(x2.ro),1,{tier:'b',m:x2.m}),
-      {k:'sell',n:Math.round(900*Math.pow(L,1.6))},QK(a3,cnt(a3,.5)),QK(a2,cnt(a2,.4)),{k:'base'}];
+      {k:'sell',n:Math.round(2700*Math.pow(L,1.6))},QK(a3,cnt(a3,.5)),QK(a2,cnt(a2,.4)),{k:'base'}];
     const pickN=pool.slice(0,len-1);pickN.push({k:'base'});
     BOARD.push({id:`c${L}`,lvl:L,chain:1,title:`Zincir görevi · Sv${L}`,obj:pickN,ord:1,txt:'Uzun görev: adımlar sırayla tamamlanır. Ödül iki katı.'});
   }
@@ -1017,7 +1017,7 @@ function mkDaily(diff){
     {title:`${ET[a].name} temizliği`,obj:[QK(a,DCOUNT[a]||10)]},
     {title:'Madenci',obj:[{k:'ore',o:'any',n:60+20*L}]},
     {title:'Kutu toplayıcı',obj:[{k:'box',n:6}]},
-    {title:'Pazar günü',obj:[{k:'sell',n:4000*L}]}]);}
+    {title:'Pazar günü',obj:[{k:'sell',n:12000*L}]}]);}
   if(diff==='m'){return pickR([
     {title:'Boss avı',obj:[QK('any',2,{tier:'b'})]},
     {title:'Temiz sicil',obj:[QK(a,Math.ceil((DCOUNT[a]||10)*1.2))],noDie:1},
