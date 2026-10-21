@@ -213,7 +213,7 @@ body.left #target{left:auto;right:var(--g-r)}
 #tut[hidden]{display:none}#tutImg{flex:0 0 56px;height:70px;border-radius:10px;background-size:cover;background-position:center top;box-shadow:inset 0 0 0 1px var(--fac,#4aa8ff)}
 #tut .tb{justify-items:start;display:grid;gap:4px;align-content:start;min-width:0}#tut b{font-size:11px;letter-spacing:.14em;color:var(--fac,#4aa8ff);text-transform:uppercase}#tut p{margin:0;font-size:13px;line-height:1.35;color:var(--fg)}
 #tut .tbtn{display:flex;gap:8px;margin-top:2px}#tut button{all:unset;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.08em;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.1);color:var(--fg)}#tut #tutMore[hidden],#tut #tutPrev[hidden],#tut #tutSkip[hidden]{display:none}#tut #tutNext{background:var(--fac,#4aa8ff);color:#06101e}#tut #tutNext[hidden]{display:none}
-.aucg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.aucg .hq{min-width:0}.hq.ac{align-content:start}.hq.ac .aart{height:52px;display:grid;place-items:center}.hq.ac .aart .art{width:52px;height:52px;object-fit:contain;display:block}.hq.ac b{font-size:12.5px}.hq.ac .acat{font-size:10px;letter-spacing:.1em;opacity:.55}.hq.ac span{font-size:11.5px}.hq.ac .r2{display:flex;gap:5px;margin-top:4px}.hq.ac .r2 .buy{width:auto;flex:none;padding:8px 10px}.hq.ac .row .buy{width:100%;justify-content:center;padding:8px 6px;font-size:12px}.hq.ac input{width:100%;box-sizing:border-box;padding:8px!important;font-size:12px!important}
+.aucg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.aucg .hq{min-width:0}.hq.ac{align-content:start}.hq.ac .aart{height:52px;display:grid;place-items:center}.hq.ac .aart .art{width:52px;height:52px;object-fit:contain;display:block}.hq.ac b{font-size:12.5px}.hq.ac .acat{font-size:10px;letter-spacing:.1em;opacity:.55}.hq.ac span{font-size:11.5px}.hq.ac .r2{display:grid;gap:5px;margin-top:4px}.hq.ac .r2 .buy{width:100%;justify-content:center;padding:8px 10px}.hq.ac .row .buy{width:100%;justify-content:center;padding:8px 6px;font-size:12px}.hq.ac input{width:100%;box-sizing:border-box;padding:8px!important;font-size:12px!important}
 .hq{display:grid;gap:3px;padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--edge)}.hq b{font-size:13px}.hq span{font-size:12.5px;line-height:1.4;color:var(--dim)}
 #bakTa{width:100%;box-sizing:border-box;font:inherit;font-size:12px;color:var(--fg);background:rgba(255,255,255,.06);border:0;border-radius:10px;padding:10px;box-shadow:inset 0 0 0 1px var(--edge);resize:none}
 .rem{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--dim);cursor:pointer}.rem input{width:20px;height:20px;accent-color:var(--fac,#4aa8ff)}
@@ -1666,8 +1666,8 @@ function addShot(s){
   let m;
   if(s.kind==='laser'||s.kind==='tri'){if(s.from==='p'&&!s.vis)sfx('laser');}else if(s.kind==='rocket')sfx('rocket');else sfx('elaser',.7);
   if(s.kind==='laser'){const c=laserCol();m=new THREE.Mesh(G.laser,basic(new THREE.Color(c).lerp(new THREE.Color('#ffffff'),.35).getStyle()));const gs=new THREE.Sprite(sharedGlow(c,.8));gs.scale.setScalar(20);gs.position.x=20;m.add(gs);}
-  else if(s.kind==='tri'){if(!G.tri){G.tri=new THREE.ConeGeometry(7,22,3);G.tri.rotateZ(-Math.PI/2);G.tri.rotateX(Math.PI/2);}
-    m=new THREE.Mesh(G.tri,basic('#b8ffd4'));const gs=new THREE.Sprite(sharedGlow('#7dffb0',.9));gs.scale.setScalar(46);m.add(gs);}
+  else if(s.kind==='tri'){if(!G.tri){G.tri=new THREE.RingGeometry(21,30,3);G.tri.rotateX(-Math.PI/2);}
+    m=new THREE.Mesh(G.tri,new THREE.MeshBasicMaterial({color:'#9dffc4',side:THREE.DoubleSide}));}
   else if(s.kind==='rocket')m=new THREE.Mesh(G.rocket,basic(s.slow?'#8ad8ff':'#ffb547'));
   else m=new THREE.Mesh(s.kind==='orb'?G.orb:G.bolt,basic(s.col));
   m.position.set(s.x,14,s.y);scene.add(m);s.mesh=m;shots.push(s);
