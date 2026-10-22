@@ -1083,8 +1083,12 @@ function stateMet(o){
   if(o.k==='base')return !!curMap&&curMap.base&&typeof inBase==='function'&&inBase(P);
   return null;
 }
+function monWhere(a,tier){if(a==='any')return '';const c=S&&S.fac?CO[S.fac]:'K',t=tier||'n',own=[],oth=[];
+  Object.keys(MAPS).forEach(id=>{const m=MAPS[id];if(m.gate||!m.roster||!m.roster.some(r=>r[0]===a&&(r[2]==='b')===(t==='b')))return;
+    if(id[0]===c)own.push(id);else if(!/^[KMY]/.test(id))oth.push(id);});
+  own.sort();const l=own.concat(oth).slice(0,4).map(mapLabel);return l.length?' ('+l.join(', ')+')':'';}
 function objText(o){
-  if(o.k==='kill'){const nm=o.a==='any'?'Uzaylı':ET[o.a].name;return `${TIERN[o.tier||'n']}${nm} yok et${o.m?' · '+mapLabel(o.m):''}`;}
+  if(o.k==='kill'){const nm=o.a==='any'?'Uzaylı':ET[o.a].name;return `${TIERN[o.tier||'n']}${nm} yok et${o.m?' · '+mapLabel(o.m):monWhere(o.a,o.tier)}`;}
   if(o.k==='ore')return `${o.o==='any'?'Maden':ORE[o.o].name} topla`;
   if(o.k==='sell')return 'Kredilik maden sat';
   if(o.k==='box')return 'Bonus kutusu topla';
@@ -2337,7 +2341,7 @@ const HELP=[
   ['Ölünce ne olur','Nerede ölürsen öl en yakın hangarda doğarsın ve kargo kaybolur. Tamir etmezsen gemi kalıcı olarak silinir; tamir ücreti gemi fiyatının yüzde 5\'idir ve geminin kendi para birimiyle ödenir (kredili gemi kredi, kristalli gemi kristal).'],
   ['Tamir kuponu','Toplanan kutulardan nadiren çıkar, en fazla 3 tane biriktirebilirsin. Ölüm ekranında ücretsiz tamir için kullanılır. Serçe ve Galaksi Geçidi her zaman ücretsizdir.']]],
  ['Ekonomi',[
-  ['Açık artırma','Her 3 saatte bir yeni tur başlar: 12 sabit ve 3 değişken ürün. Kristalle satılan ürünlere kredi ile teklif verirsin. Teklifini elle yazabilir, bitiş süresini izleyebilirsin; kaybedersen krediler iade edilir. Kazanılan ürün posta kutusuna düşer.'],
+  ['Açık artırma','Her saat yeni tur başlar: 12 sabit ve 3 değişken ürün. Kristalle satılan ürünlere kredi ile teklif verirsin. Teklifini elle yazabilir, bitiş süresini izleyebilirsin; kaybedersen krediler iade edilir. Kazanılan ürün posta kutusuna düşer.'],
   ['Görevler','Pano görevlerinden aynı anda 3 tane alabilirsin. Günlük ve haftalık görevler ek ödül verir.'],
   ['Başarımlar','Belirli hedefleri tamamlayınca ödül veren başarım listesi Pilot menüsündedir.']]],
  ['Ayarlar',[
@@ -2452,7 +2456,7 @@ function openAch(){const p=document.querySelector('#mHelp #hPane');p.innerHTML='
 
 
 /* ---- Açık artırma: 3 saatlik tur, 12 sabit + 3 değişken lot, rakipler botlardır (sunucusuz, tur no saatten gelir) ---- */
-const AUC_MS=3*3600*1000,AUC_RATE=100; // 1 kristal = 100 kredi: kristalle satılan ürünlere KREDİYLE teklif verilir (kristal harcamayan oyuncu için denge)
+const AUC_MS=3600*1000,AUC_RATE=100; // 1 kristal = 100 kredi: kristalle satılan ürünlere KREDİYLE teklif verilir (kristal harcamayan oyuncu için denge)
 const aucTourNo=()=>Math.floor(Date.now()/AUC_MS);
 function aucR(a,b){let h=Math.imul(a+1,2654435761)^Math.imul(b+7,40503);h=Math.imul(h^(h>>>15),2246822507);h=Math.imul(h^(h>>>13),3266489909);return((h^(h>>>16))>>>0)/4294967296;}
 const aucItem=(id,ref)=>({name:ITEMS[id].name,art:()=>artLaser(id),ref,own:()=>false,give:()=>{const u=newItem(S,id);placeNew(u);}});
@@ -2477,10 +2481,20 @@ function aucLots(tour){
     ()=>aucAmmo('a4',10000,25000),()=>aucRk('r2',500,7500),()=>aucAmmo('a3',10000,10000)];
   const vars=[0,1,2].map(k=>{const l=pool[(tour*3+k)%pool.length]();l.id='v'+k;l.cat='NADİR';return l;});
   const all=fixed.filter(l=>l.cat==='GEMİ').concat(fixed.filter(l=>l.cat!=='GEMİ'),vars); // gemiler listenin başında
-  all.forEach(l=>{l.start=Math.round(l.ref*AUC_RATE*.5);l.max=Math.round(l.ref*AUC_RATE*(.6+.3*aucR(tour,l.id.charCodeAt(1)+l.id.charCodeAt(0)*13)));});
+  all.forEach(l=>{const h=[...l.id].reduce((a,c,i)=>a+c.charCodeAt(0)*(i+3)*17,0),rr=k=>aucR(tour,h+k*101),V=l.ref*AUC_RATE,
+    fb=l.cat==='NADİR'?.8+.12*rr(9):l.cat==='GEMİ'?.7+.12*rr(9):.68+.17*rr(9); // tüketim malzemesine (cephane/roket) daha çok değer verirler, nadir ürüne de
+    l.start=Math.round(V*(.1+.06*rr(8)));
+    l.bots=[0,1,2,3].map(j=>({v:Math.round(V*fb*(.72+.28*rr(j))),t:.04+.62*rr(j+4),step:.06+.05*rr(j+12)}));
+    l.max=0;});
+  all.forEach(l=>{l.max=aucBot(l,AUC_MS-1);}); // kazanma eşiği = botların tur sonundaki son teklifi (oyuncu bunu geçerse kazanır)
   return all;
 }
-function aucBot(l,now){const prog=(now%AUC_MS)/AUC_MS;return Math.round(l.start+(l.max-l.start)*Math.pow(prog,3));}
+function aucBot(l,now){const prog=(now%AUC_MS)/AUC_MS,ev=[];
+  l.bots.forEach((b,j)=>{for(let k=0;k<7;k++){const t=b.t+k*b.step;if(t<=prog&&t<.97)ev.push([t,j]);}});
+  ev.sort((a,b)=>a[0]-b[0]);let top=0;
+  ev.forEach(([t,j])=>{const b=l.bots[j],want=Math.max(l.start,Math.round(top*(1.05+.04*((j+top)%3)))); // mantıklı bot: önceki teklifi %5-13 aşar, değerini geçmez
+    if(want<=b.v&&want>top)top=want;});
+  return top||l.start;}
 function aucResolve(tour,my){const lots=aucLots(tour);const out=[];
   for(const id of Object.keys(my)){const l=lots.find(x=>x.id===id);const bid=my[id];if(!l){S.cr+=bid;continue;}
     if(bid>l.max&&!l.own()){l.give();out.push('Açık artırmayı kazandın: '+l.name+' ('+fmt(bid)+' kredi)');}
