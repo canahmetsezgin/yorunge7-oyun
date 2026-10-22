@@ -2833,8 +2833,22 @@ function paneSell(pane){
   const l=document.createElement('div');l.className='list';pane.appendChild(l);
   Object.entries(ORE).forEach(([k,o])=>{const n=S.cargo[k],ok=oreSellable(k),v=n*orePrice(k);const r=li('extra',o.name,ok?`${fmt(n)} adet · adedi ${fmt(orePrice(k))} kredi`:`${fmt(n)} adet · bu istasyon almıyor (X-4 / X-8'e git)`,'',false,artOre(k));r.style.setProperty('--k',o.col);
     r.appendChild(mkBtn('cr',ok?`${fmt(v)}`:'Alınmıyor',()=>sellOre([k]),!n||!ok));l.appendChild(r);});
-  paneWork(pane);
+  paneWork(pane);paneGear(pane);
   if(!used)pane.insertAdjacentHTML('beforeend','<p class="note">Kargo boş. Uzaylıların düşürdüğü madenleri topla, burada sat.</p>');
+}
+const gearSell=id=>{const it=ITEMS[id];return Math.round(it.cur==='kr'?it.price*2.5:it.price*.25);}; // kredi eşyası %25, kristal eşyası kristal başına 2,5 kredi (kristal→kredi dönüşümünden kötü: sömürü yok)
+function paneGear(pane){
+  const fr=freeItems(),by={};fr.forEach(x=>{(by[x.id]=by[x.id]||[]).push(x.u);});
+  pane.insertAdjacentHTML('beforeend','<h3>Ekipman satışı</h3>');
+  const l=document.createElement('div');l.className='list';pane.appendChild(l);
+  const ids=Object.keys(by);
+  if(!ids.length){pane.insertAdjacentHTML('beforeend','<p class="note">Satılacak boş ekipman yok. Gemiye ya da dronlara takılı ekipman satılamaz.</p>');return;}
+  ids.forEach(id=>{const it=ITEMS[id],n=by[id].length,p=gearSell(id);
+    const r=li(it.kind,it.name,`${n} adet boşta · adedi ${fmt(p)} kredi`,'',false,it.kind==='laser'?artLaser(id):it.kind==='shield'?artShield(id):artSpeed(id));
+    const sell=k=>{const us=by[id].slice(0,k);S.inv=S.inv.filter(x=>!us.includes(x.u));S.cr+=p*us.length;log(`${it.name} ×${us.length} satıldı · +${fmt(p*us.length)} kredi`,'#ffbe55');after(`+${fmt(p*us.length)} kredi`);};
+    r.appendChild(mkBtn('cr',`Sat · ${fmt(p)}`,()=>sell(1)));
+    if(n>1)r.appendChild(mkBtn('cr',`Hepsi · ${fmt(p*n)}`,()=>sell(n)));
+    l.appendChild(r);});
 }
 const CORE_COST={f:20,k:8,z:1},CORE_SELL=3600,CORE_VOL=100,CORE_MIN=2;
 function paneWork(pane){
