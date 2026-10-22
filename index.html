@@ -604,7 +604,7 @@ const fmt=n=>Math.round(n).toLocaleString('tr-TR');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 /* =================== DATA =================== */
-const VS=1.7,WX=10000,WY=6500,RAD=800,BASE={x:650,y:650,r:360},PORTAL_R=220;
+const VS=1.7,WX=12500,WY=8125,RAD=800,BASE={x:650,y:650,r:360},PORTAL_R=220;
 const FAC={
   kizil:{name:'Kızıl Birlik',col:'#ff5a4e',rgb:'255,90,78',n:1,txt:'Ağır zırh geleneği. Sınırda doğmuş, sınırda savaşır.'},
   mavi:{name:'Mavi Konsorsiyum',col:'#4ea8ff',rgb:'78,168,255',n:2,txt:'Ticaret hatlarının sahibi. Disiplinli filolar.'},
@@ -702,7 +702,7 @@ const REP=[
 const DRONE_PRICE=[100000,200000,400000,800000,1600000,3200000,6400000,12800000].map(p=>[p,'cr']); // DarkOrbit Flax fiyatları, 1 slotlu dron
 const DRONE_KR=[0,1,2,3,4,5,6,7].map(i=>[3000*(i+1),'kr']); // çift slotlu dron: 3000,6000,...,24000 kristal
 const DLVL=[0,100,200,400,800,1600];
-const COLLECTOR={price:10000,cur:'kr',r:1100};
+const COLLECTOR={price:10000,cur:'kr',r:380};
 const AUTOL=[{name:'RC-1 otomatik roket CPU',n:1,price:15000,cur:'kr'},{name:'RC-2 çift roket CPU',n:2,price:40000,cur:'kr'},{name:'RC-3 üçlü roket CPU',n:3,price:90000,cur:'kr'}];
 // CPU'lar: kristalle alınan kalıcı yardımcılar
 const CPUS=[
@@ -1544,8 +1544,8 @@ function build(id,from){
   if(from===undefined){if(curMap.base){P.x=BASE.x+120;P.y=BASE.y+120;}else{const pt=portals[0]||{x:WX/2,y:WY-600},a=Math.atan2(WY/2-pt.y,WX/2-pt.x);P.x=pt.x+Math.cos(a)*300;P.y=pt.y+Math.sin(a)*300;}}
   else{const pt=portals.find(p=>p.to===from)||portals[0]||{x:WX/2,y:WY-600};const a=Math.atan2(WY/2-pt.y,WX/2-pt.x);P.x=pt.x+Math.cos(a)*300;P.y=pt.y+Math.sin(a)*300;}
   P.vx=P.vy=0;P.target=null;P.follow=false;P.moveTo=null;P.boxT=null;P.auto=false;
-  if(!curMap.gate)curMap.roster.forEach(([k,n,tier])=>{let m=k==='kovan'?n:tier==='n'?Math.round(n*2.5):n*2;if(curMap.pvp&&k!=='kovan'&&k!=='rakip')m=Math.round(m*1.5);for(let j=0;j<m;j++)spawn(k,tier);});
-  for(let j=0;j<(curMap.gate?0:60);j++)addBonusBox();
+  if(!curMap.gate)curMap.roster.forEach(([k,n,tier])=>{let m=k==='kovan'?n:tier==='n'?Math.round(n*2.5):n*2;if(curMap.pvp&&k!=='kovan'&&k!=='rakip')m=Math.round(m*1.5);if(k!=='kovan'&&k!=='rakip')m=Math.round(m*1.25);for(let j=0;j<m;j++)spawn(k,tier);});
+  for(let j=0;j<(curMap.gate?0:75);j++)addBonusBox();
   camPos.set(P.x,0,P.y);
   questEvent('go',{map:canon(id)});save();
 }
