@@ -2763,6 +2763,7 @@ function paneFit(pane){
   pickerFor(pane);invChips(pane);
   pane.insertAdjacentHTML('beforeend','<p class="note">Parçayı sürükleyip slota bırakabilir ya da önce slota dokunup sonra parçaya dokunabilirsin. Dolu slotlar arasında sürüklersen yer değiştirir.</p>');
 }
+let drSure=null;
 function paneDrone(pane){
   const dl=dlvl(),nx=DLVL[dl];
   pane.insertAdjacentHTML('beforeend',`<div class="stats"><div class="stat"><small>DRON</small><b>${S.drones.length}/8</b></div><div class="stat"><small>SEVİYE</small><b>${dl}</b></div><div class="stat"><small>LAZER BONUSU</small><b>+%${(dl-1)*2}</b></div><div class="stat"><small>KALKAN BONUSU</small><b>+%${(dl-1)*4}</b></div></div>
@@ -2780,6 +2781,13 @@ function paneDrone(pane){
       r.appendChild(mkBtn(c,priceBtn(p,c),()=>{if(S.drones.length>=8||!pay(p,c))return;const nd={item:null,item2:null};if(ty==='e')nd.t='e';S.drones.push(nd);questEvent('check');
         const fr=freeItems().filter(x=>['laser','shield'].includes(ITEMS[x.id].kind)).sort((a,b)=>(ITEMS[b.id].dmg||0)-(ITEMS[a.id].dmg||0));if(fr[0])nd.item=fr[0].u;if(ty==='e'&&fr[1])nd.item2=fr[1].u;
         log(ty==='e'?'2 slotlu dron filoya katıldı.':'Yeni dron filoya katıldı.',FAC[S.fac].col);after();},!canPay(p,c)));pane.appendChild(r);});}
+  if(S.drones.length){const nE0=S.drones.filter(d=>d.t==='e').length,nC0=S.drones.length-nE0;
+    pane.insertAdjacentHTML('beforeend','<h3>Dron satışı</h3>');
+    [['c','1 slotlu dron',DRONE_PRICE,nC0],['e','2 slotlu dron',DRONE_KR,nE0]].forEach(([ty,nm,tbl,n])=>{if(!n)return;
+      const [p0,c0]=tbl[Math.min(n,8)-1],get=Math.round(c0==='kr'?p0*2.5:p0*.25),sure=drSure===ty;
+      const r=document.createElement('div');r.className='row';r.innerHTML=`<span class="note">${nm} · ${n} adet · en son alınanı sat</span>`;
+      r.appendChild(mkBtn('cr',sure?`Emin misin? · ${fmt(get)}`:`Sat · ${fmt(get)}`,()=>{if(!sure){drSure=ty;after();return;}
+        let ix=-1;S.drones.forEach((d,i)=>{if((d.t==='e')===(ty==='e'))ix=i;});if(ix<0)return;S.drones.splice(ix,1);S.cr+=get;drSure=null;log(`${nm} satıldı · +${fmt(get)} kredi (takılı ekipman envantere döndü)`,'#ffbe55');after(`+${fmt(get)} kredi`);}));pane.appendChild(r);});}
   pane.insertAdjacentHTML('beforeend','<h3>Formasyonlar</h3>');
   const g=document.createElement('div');g.className='grid2';pane.appendChild(g);
   FORMS.forEach(fm=>{const own=S.forms.includes(fm.id),cur=S.form===fm.id;
