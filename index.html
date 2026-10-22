@@ -702,7 +702,7 @@ const REP=[
 const DRONE_PRICE=[100000,200000,400000,800000,1600000,3200000,6400000,12800000].map(p=>[p,'cr']); // DarkOrbit Flax fiyatları, 1 slotlu dron
 const DRONE_KR=[0,1,2,3,4,5,6,7].map(i=>[3000*(i+1),'kr']); // çift slotlu dron: 3000,6000,...,24000 kristal
 const DLVL=[0,100,200,400,800,1600];
-const COLLECTOR={price:10000,cur:'kr',r:380};
+const COLLECTOR={price:10000,cur:'kr',r:250};
 const AUTOL=[{name:'RC-1 otomatik roket CPU',n:1,price:15000,cur:'kr'},{name:'RC-2 çift roket CPU',n:2,price:40000,cur:'kr'},{name:'RC-3 üçlü roket CPU',n:3,price:90000,cur:'kr'}];
 // CPU'lar: kristalle alınan kalıcı yardımcılar
 const CPUS=[
@@ -1928,7 +1928,7 @@ function update(dt){
     for(let i=boxes.length-1;i>=0;i--){const b=boxes[i];if(!b)continue;
       if(b.kind==='ore'){b.life-=dt;if(b.life<=0){scene.remove(b.mesh);disposeTree(b.mesh);boxes.splice(i,1);continue;}}
       const d=dist(b,P);
-      if(pull&&d<pull&&d>40&&!b.warned){const sp=Math.min(d,(900+(pull-d)*.9)*dt*1.6);b.x+=(P.x-b.x)/d*sp;b.y+=(P.y-b.y)/d*sp;}
+      if(pull&&d<pull&&d>40&&!b.warned){const sp=Math.min(d,(380+(pull-d)*1.2)*dt);b.x+=(P.x-b.x)/d*sp;b.y+=(P.y-b.y)/d*sp;}
       if(d<58)collect(b);}
   }
   { // auto launcher: fires rockets by itself at the current target, and swaps to the next ammo type when one runs out
