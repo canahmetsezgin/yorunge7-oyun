@@ -2511,14 +2511,16 @@ function aucSync(){if(!S.fac)return false;const cur=aucTourNo();let ch=false;
   if(S.auc.tour!==cur){const o=aucResolve(S.auc.tour,S.auc.my||{});o.forEach(m=>log(m,'#ffd166'));aucNews(o);S.auc={tour:cur,my:{}};ch=o.length>0;if(ch){save();try{sfx('collect');}catch(e){}}}
   return ch;}
 let aucT=0;
-function aucTick(){if(!S.fac||P.dead)return;if((aucT+=2)<6)return;aucT=0;let ch=aucSync();
-  const now=Date.now(),lots=aucLots(S.auc.tour);
-  for(const id of Object.keys(S.auc.my)){const l=lots.find(x=>x.id===id);if(l&&aucBot(l,now)>=S.auc.my[id]){S.cr+=S.auc.my[id];log('Açık artırmada geçildin: '+l.name+' · kredin iade edildi','#ff8a96');delete S.auc.my[id];ch=true;}}
-  if(ch){save();if(!$('mHelp').hidden&&aucOpen&&$('aucLeft')&&!aucTyping())renderAuc();}}
+function aucOut(){ // geçilen teklifler anında iade
+  if(!S.fac||!S.auc||!S.auc.my)return false;const now=Date.now(),lots=aucLots(S.auc.tour);let ch=false;
+  for(const id of Object.keys(S.auc.my)){const l=lots.find(x=>x.id===id);if(l&&aucBot(l,now)>=S.auc.my[id]){const v=S.auc.my[id];S.cr+=v;delete S.auc.my[id];ch=true;log('Açık artırmada geçildin: '+l.name+' · '+fmt(v)+' kredin iade edildi','#ff8a96');try{toast('Geçildin · +'+fmt(v)+' kredi iade');}catch(e){}}}
+  if(ch){save();try{hud();}catch(e){}}return ch;}
+function aucTick(){if(!S.fac)return;let ch=aucSync();if(aucOut())ch=true;
+  if(ch&&!$('mHelp').hidden&&aucOpen&&$('aucLeft')&&!aucTyping())renderAuc();}
 let aucOpen=false,aucIv=null;const AUC_TYPED={};const aucTyping=()=>{const a=document.activeElement;return a&&a.tagName==='INPUT'&&a.closest('#mHelp');};
 function aucLeft(){const e=AUC_MS-Date.now()%AUC_MS;const s=Math.floor(e/1000);return String(Math.floor(s/3600))+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
 function aucBid(l,amt){const old=S.auc.my[l.id]||0;if(S.cr<amt-old)return;msMark('ilkTeklif');S.cr-=amt-old;S.auc.my[l.id]=amt;save();try{sfx('ui');}catch(e){}renderAuc();}
-function renderAuc(){const p=document.querySelector('#mHelp #hPane');const y=p.scrollTop;aucSync();p.innerHTML='';const now=Date.now(),lots=aucLots(S.auc.tour);
+function renderAuc(){const p=document.querySelector('#mHelp #hPane');const y=p.scrollTop;aucSync();aucOut();p.innerHTML='';const now=Date.now(),lots=aucLots(S.auc.tour);
   const h=document.createElement('div');h.className='hq';h.innerHTML=`<b>Tur bitiyor: <span id="aucLeft">${aucLeft()}</span></b><span>Kredin <b>${fmt(S.cr)}</b>. Kristalle satılan ürünlere krediyle teklif verirsin. Teklif verince kredi bloke olur; geçilirsen ya da kaybedersen anında iade edilir. Tur bitiminde en yüksek teklif kazanır.</span>`;h.style.gridColumn='1/-1';const g=document.createElement('div');g.className='aucg';g.appendChild(h);p.appendChild(g);
   lots.forEach(l=>{const bot=aucBot(l,now),my=S.auc.my[l.id]||0,lead=my>bot,top=Math.max(bot,my),min=Math.max(top+1,Math.ceil(top*1.05)),own=l.own();
     const d=document.createElement('div');d.className='hq ac';
@@ -2534,7 +2536,7 @@ function renderAuc(){const p=document.querySelector('#mHelp #hPane');const y=p.s
   p.scrollTop=y;}
 function openAuc(){helpHint('auc');aucOpen=true;S.auc||aucSync();S.auc=S.auc||{tour:aucTourNo(),my:{}};renderAuc();
   document.querySelector('#mHelp h2').textContent='Açık Artırma';document.querySelector('#mHelp .kick').textContent='KREDİ İLE TEKLİF';$('mHelp').hidden=false;
-  clearInterval(aucIv);let n=0;aucIv=setInterval(()=>{if($('mHelp').hidden||!aucOpen){aucOpen=false;clearInterval(aucIv);return;}const e=$('aucLeft');if(e)e.textContent=aucLeft();else{aucOpen=false;clearInterval(aucIv);return;}if(++n%10===0&&!aucTyping()){aucTick();renderAuc();}},1000);}
+  clearInterval(aucIv);let n=0;aucIv=setInterval(()=>{if($('mHelp').hidden||!aucOpen){aucOpen=false;clearInterval(aucIv);return;}const e=$('aucLeft');if(e)e.textContent=aucLeft();else{aucOpen=false;clearInterval(aucIv);return;}if(aucOut()&&!aucTyping()){renderAuc();return;}if(++n%10===0&&!aucTyping()){aucTick();renderAuc();}},1000);}
 
 /* ---- Galaksi Geçidi: dalga dalga savaş ---- */
 const GGW10=[
