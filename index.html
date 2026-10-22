@@ -168,6 +168,8 @@ body.left #target{left:auto;right:var(--g-r)}
 .slot.empty{color:var(--dim);font-weight:500}
 .slot.l{color:#ffb08a}.slot.s{color:var(--shield)}.slot.h{color:#9cf0a8}
 .slot.pick{box-shadow:inset 0 0 0 2px var(--fac)}
+.slot.has{display:flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;min-width:76px}.slot.has .art{width:30px;height:30px;flex:none;display:block}.slot.has span:not(.art){font-size:12px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dcard{display:grid;justify-items:center;gap:3px;padding:8px;border-radius:12px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px var(--edge)}.dcard.dead{opacity:.55}.dcard .dimg .art{width:46px;height:46px;display:block}.dcard b{font-size:12.5px}.dcard small{opacity:.65;font-size:11px}.dsl{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;justify-content:center}.dsl .slot{min-width:0}
 .slot:focus-visible{outline:2px solid var(--fac)}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .stat{padding:7px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px var(--edge);display:grid;gap:1px}
@@ -2745,10 +2747,20 @@ function invChips(pane){
 function slotRow(title,arr,type){
   const wrap=document.createElement('div');wrap.className='pane';
   wrap.innerHTML=`<h3>${title}</h3>`;const sl=document.createElement('div');sl.className='slots';
-  arr.forEach((u,i)=>{const b=document.createElement('button');b.type='button';b.className='slot '+slotClass(u)+(pick&&pick.type===type&&pick.i===i?' pick':'');b.textContent=u?slotLabel(u):'boş';b.dataset.slot=type+':'+i;b.style.touchAction='none';
-    b.onclick=()=>{if(Date.now()-DRAGGED<350)return;pick=pick&&pick.type===type&&pick.i===i?null:{type,i};renderHangar();};if(u)dragInit(b,()=>({u,from:[type,i]}));sl.appendChild(b);});
+  arr.forEach((u,i)=>sl.appendChild(slotBtn(u,type,i)));
   wrap.appendChild(sl);return wrap;
 }
+function slotBtn(u,type,i){const b=document.createElement('button');b.type='button';b.className='slot '+slotClass(u)+(pick&&pick.type===type&&pick.i===i?' pick':'');
+  if(u){const iv=S.inv.find(x=>x.u===u),id=iv?iv.id:null;b.classList.add('has');b.innerHTML=(id&&IX_GEAR[id]!==undefined?artLaser(id):'')+'<span>'+slotLabel(u)+'</span>';}else b.textContent='boş';
+  b.dataset.slot=type+':'+i;b.style.touchAction='none';
+  b.onclick=()=>{if(Date.now()-DRAGGED<350)return;pick=pick&&pick.type===type&&pick.i===i?null:{type,i};renderHangar();};if(u)dragInit(b,()=>({u,from:[type,i]}));return b;}
+function droneRow(){const wrap=document.createElement('div');wrap.className='pane';wrap.innerHTML='<h3>Dron slotları</h3>';
+  const g=document.createElement('div');g.className='dgrid';let idx=0;
+  S.drones.forEach((d,n)=>{const two=d.t==='e',hp=Math.round(d.hp===undefined?100:d.hp);
+    const c=document.createElement('div');c.className='dcard'+(hp<=0?' dead':'');
+    c.innerHTML=`<div class="dimg">${spr(3,3)}</div><b>Dron ${n+1}</b><small>${two?'2 slot':'1 slot'} · %${hp}</small>`;
+    const r=document.createElement('div');r.className='dsl';r.appendChild(slotBtn(d.item,'D',idx++));if(two)r.appendChild(slotBtn(d.item2,'D',idx++));c.appendChild(r);g.appendChild(c);});
+  wrap.appendChild(g);return wrap;}
 function pickerFor(pane){
   if(!pick)return;
   const f=fitOf(S.ship);const arr=pick.type==='L'?f.L:pick.type==='G'?f.G:dSlots().map(s=>s.d[s.k]);
@@ -2793,7 +2805,7 @@ function paneDrone(pane){
     const dmgd=S.drones.filter(d=>d.hp!==undefined&&d.hp<100),cost=d=>Math.ceil((100-(d.hp===undefined?100:d.hp))/100*(d.t==='e'?40:20)),tot=dmgd.reduce((v,d)=>v+cost(d),0);
     const r0=document.createElement('div');r0.className='row';r0.innerHTML=`<span class="note">Dron sağlığı: ${S.drones.map(d=>Math.round(d.hp===undefined?100:d.hp)+'%').join(' · ')}</span>`;
     r0.appendChild(mkBtn('kr',tot?`Hepsini tamir et · ${tot} kristal`:'Hasar yok',()=>{if(S.kr<tot)return;S.kr-=tot;S.drones.forEach(d=>{d.hp=100;});log('Dronlar tamir edildi.','#5ee38f');after();},!tot||S.kr<tot));pane.appendChild(r0);
-    pane.appendChild(slotRow('Dron slotları',dSlots().map(s=>s.d[s.k]),'D'));invChips(pane);}
+    pane.appendChild(droneRow());invChips(pane);}
   pickerFor(pane);
   if(S.drones.length<8){
     const nE=S.drones.filter(d=>d.t==='e').length,nC=S.drones.length-nE;
