@@ -2500,9 +2500,15 @@ function aucResolve(tour,my){const lots=aucLots(tour);const out=[];
     if(bid>l.max&&!l.own()){l.give();out.push('Açık artırmayı kazandın: '+l.name+' ('+fmt(bid)+' kredi)');}
     else{S.cr+=bid;out.push('Açık artırma kaybedildi: '+l.name+' · kredin iade edildi');}}
   return out;}
+function aucNews(o){if(!o||!o.length)return;try{
+  const old=document.getElementById('aucNews');if(old)old.remove();
+  const d=document.createElement('div');d.id='aucNews';d.style.cssText='position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(2,6,14,.72);padding:16px';
+  const win=o.filter(m=>/kazandın/.test(m)).length;
+  d.innerHTML='<div style="max-width:340px;width:100%;padding:16px;border-radius:14px;background:#0d1626;box-shadow:inset 0 0 0 1px rgba(125,255,176,.35);color:#e3eaf7;font:14px/1.45 system-ui,sans-serif"><b style="font-size:16px;color:#7dffb0">Açık artırma sonuçları</b><div style="margin:4px 0 10px;opacity:.7;font-size:12px">'+(win?win+' ürün kazandın. ':'Bu turda ürün kazanılamadı. ')+'Kaybedilenlerin kredisi iade edildi.</div>'+o.map(m=>'<div style="padding:7px 9px;margin-bottom:5px;border-radius:8px;background:rgba(255,255,255,.06);color:'+(/kazandın/.test(m)?'#7dffb0':'#ffb0b8')+'">'+m.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</div>').join('')+'<button type="button" style="margin-top:8px;width:100%;padding:11px;border:0;border-radius:10px;background:#7dffb0;color:#04120a;font:inherit;font-weight:700;cursor:pointer">Tamam</button></div>';
+  d.querySelector('button').onclick=()=>d.remove();document.body.appendChild(d);}catch(e){}}
 function aucSync(){if(!S.fac)return false;const cur=aucTourNo();let ch=false;
   if(!S.auc){S.auc={tour:cur,my:{}};return false;}
-  if(S.auc.tour!==cur){const o=aucResolve(S.auc.tour,S.auc.my||{});o.forEach(m=>log(m,'#ffd166'));S.auc={tour:cur,my:{}};ch=o.length>0;if(ch){save();try{sfx('collect');}catch(e){}}}
+  if(S.auc.tour!==cur){const o=aucResolve(S.auc.tour,S.auc.my||{});o.forEach(m=>log(m,'#ffd166'));aucNews(o);S.auc={tour:cur,my:{}};ch=o.length>0;if(ch){save();try{sfx('collect');}catch(e){}}}
   return ch;}
 let aucT=0;
 function aucTick(){if(!S.fac||P.dead)return;if((aucT+=2)<6)return;aucT=0;let ch=aucSync();
