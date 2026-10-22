@@ -1600,7 +1600,6 @@ function hurtPlayer(d){
   if(P.dead||T<(P.invT||0)||T<(P.insT||0))return;P.lastHit=T;shake=Math.max(shake,P.sh>0?2:5);
   sfx('hit');const st=stats();const a=Math.min(P.sh,d*st.abs);P.sh-=a;P.hp-=d-a;
   if(P.repairing){P.repairing=false;}
-  {let broke=0;S.drones.forEach(dr=>{const h=dr.hp===undefined?100:dr.hp;if(h<=0)return;dr.hp=Math.max(0,h-d/(st.maxHp+st.maxSh+1)*40);if(dr.hp<=0)broke++;});if(broke)log(`${broke} dron hasar aldı ve devre dışı kaldı. Hangardan kristalle tamir et.`,'#ff8a96');}
   flo(P.x+rnd(-14,14),P.y,`-${fmt(d)}`,'#ff5468',12,50);
   if(P.hp<=0)die();
 }
