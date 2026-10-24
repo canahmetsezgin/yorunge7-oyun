@@ -354,7 +354,7 @@ body.compact .radar .rt{display:none}
 @media (min-width:700px){#mHangar,#mPilot,#mMaps,#mHelp{align-items:center}.sheet.bs{border-radius:var(--r)}}
 @media (prefers-reduced-motion:reduce){.bar i,#log div{transition:none}#rad{animation:none}#mLoad,#mLoad .lbar i{transition:none}.sheet.bs{animation:none}#hToast{transition:none}}
 /* Masaüstü: geniş panel, ızgaralar genişliğe göre dolsun */
-@media (min-width:900px){.sheet.bs.bs{width:min(1240px,96vw)}.sheet.bs .pane:has(>.qc){grid-template-columns:repeat(auto-fill,minmax(440px,1fr));align-items:start}.sheet.bs .pane:has(>.qc)>:not(.qc){grid-column:1/-1}.sheet.bs .qc .qh{justify-content:flex-start}.sheet.bs .qc .qh b{margin-right:auto}.sheet.bs .grid2,.sheet.bs .aucg,.sheet.bs .dgrid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}.sheet.bs .stats{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.sheet.bs p{max-width:none}}
+@media (min-width:900px){.sheet.bs.bs{width:min(1240px,96vw)}.sheet.bs .pane>.list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch}.sheet.bs .pane:has(>.qc){grid-template-columns:repeat(auto-fill,minmax(440px,1fr));align-items:start}.sheet.bs .pane:has(>.qc)>:not(.qc){grid-column:1/-1}.sheet.bs .qc .qh{justify-content:flex-start}.sheet.bs .qc .qh b{margin-right:auto}.sheet.bs .grid2,.sheet.bs .aucg,.sheet.bs .dgrid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}.sheet.bs .stats{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.sheet.bs p{max-width:none}}
 
 /* ===== Komuta Konsolu (B) ===== */
 #mHangar,#mPilot,#mMaps,#mHelp{background:#050a16;backdrop-filter:none;-webkit-backdrop-filter:none;align-items:stretch}
